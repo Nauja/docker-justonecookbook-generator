@@ -1,0 +1,26 @@
+{
+  "name": "justonecookbook-generator",
+  "version": "0.1.0",
+  "description": "Service to generate Just One Cookbook themed recipes with pandoc",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/Nauja/docker-justonecookbook-generator",
+  "keywords": [
+    "Electron",
+    "pandoc",
+    "justonecookbook",
+    "generator",
+    "recipe"
+  ],
+  "author": "Nauja",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^5.0.0"
+  },
+  "dependencies": {
+    "config": "^3.1.0",
+    "jquery": "^3.4.1"
+  }
+}
