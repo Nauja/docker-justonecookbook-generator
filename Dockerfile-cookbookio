@@ -1,0 +1,14 @@
+FROM cookbookio:node
+WORKDIR /home/service
+
+VOLUME [ "/home/service" ]
+
+ADD service /home/service
+
+RUN cd /home/service && \
+    npm install express && \
+    npm install
+
+CMD [ "node", "app.js" ]
+
+EXPOSE 8080

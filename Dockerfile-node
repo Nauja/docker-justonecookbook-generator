@@ -1,0 +1,12 @@
+FROM cookbookio:pandoc
+
+VOLUME [ "/root/.npm/_logs" ]
+
+RUN apt-get update -qq
+RUN apt-get install -y build-essential
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-get install -y nodejs
+RUN nodejs -v && \
+    npm -v
+
+CMD [ "npm", "-v" ]

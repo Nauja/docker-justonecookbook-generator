@@ -1,0 +1,7 @@
+FROM haskell:latest
+
+RUN apt-get update
+RUN apt-get install -y texlive
+RUN apt-get install -y pandoc
+
+CMD [ '/bin/sh' ]
