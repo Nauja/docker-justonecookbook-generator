@@ -1,0 +1,3 @@
+wheel
+aiohttp
+WeasyPrint==51
