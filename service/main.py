@@ -1,10 +1,91 @@
 import argparse
-import aiorest
 import aiohttp_jinja2
 import jinja2
 import logging
 from service.app import Application
 from service import monad
+
+
+DEFAULT_LOGGING_MAXBYTES = 1000000
+DEFAULT_LOGGING_BACKUPCOUNT = 5
+DEFAULT_CONFIG = {
+    "service": {"port": 8080, "base-url": "/"},
+    "logging": {
+        "access-logfile": "",
+        "access-maxbytes": DEFAULT_LOGGING_MAXBYTES,
+        "access-backupcount": DEFAULT_LOGGING_BACKUPCOUNT,
+        "error-logfile": "",
+        "error-maxbytes": DEFAULT_LOGGING_MAXBYTES,
+        "error-backupcount": DEFAULT_LOGGING_BACKUPCOUNT,
+    },
+    "ssl": {"certfile": "", "keyfile": ""},
+}
+
+
+def load_config(path):
+    """Load the service configuration from file.
+
+    Returns default parameters overriden by the ones in the configuration file.
+
+    :param path: file to load
+    :return: a dict containing loaded configuration
+    """
+    import configparser
+
+    result = dict(DEFAULT_CONFIG)
+    config = configparser.ConfigParser()
+    config.read(path)
+    for s in config.sections():
+        result.setdefault(s, {}).update(config.items(s))
+
+    result["service"]["port"] = int(result["service"]["port"])
+    result["logging"]["access-maxbytes"] = int(result["logging"]["access-maxbytes"])
+    result["logging"]["access-backupcount"] = int(
+        result["logging"]["access-backupcount"]
+    )
+    result["logging"]["error-maxbytes"] = int(result["logging"]["error-maxbytes"])
+    result["logging"]["error-backupcount"] = int(result["logging"]["error-backupcount"])
+    return result
+
+
+def setup_logging(
+    *,
+    access_logfile=None,
+    access_maxbytes=None,
+    access_backupcount=None,
+    error_logfile=None,
+    error_maxbytes=None,
+    error_backupcount=None
+):
+    """Setup logging handlers.
+
+    This setup two `RotatingFileHandler` for `aiohttp.access` and `aiohttp.server` logs.
+
+    :param access_logfile: path for access logfile or `None`
+    :param access_maxbytes: max bytes per access logfile
+    :param access_backupcount: max number of access logfile to keep
+    :param error_logfile: path for error logfile or `None`
+    :param error_maxbytes: max bytes per error logfile
+    :param error_backupcount: max number of error logfile to keep
+    """
+    from logging.handlers import RotatingFileHandler
+
+    if access_logfile:
+        logging.getLogger("aiohttp.access").addHandler(
+            RotatingFileHandler(
+                access_logfile,
+                maxBytes=access_maxbytes or DEFAULT_LOGGING_MAXBYTES,
+                backupCount=access_backupcount or DEFAULT_LOGGING_BACKUPCOUNT,
+            )
+        )
+    if error_logfile:
+        logging.getLogger("aiohttp.server").addHandler(
+            RotatingFileHandler(
+                error_logfile,
+                maxBytes=error_maxbytes or DEFAULT_LOGGING_MAXBYTES,
+                backupCount=error_backupcount or DEFAULT_LOGGING_BACKUPCOUNT,
+            )
+        )
 
 
 def main():
@@ -15,11 +96,11 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbosity level")
     args = parser.parse_args()
 
-    config = aiorest.load_config(args.config)
+    config = load_config(args.config)
 
     logging.basicConfig(level=logging.INFO)
 
-    aiorest.setup_logging(
+    setup_logging(
         access_logfile=config["logging"].get("access-logfile", None),
         access_maxbytes=config["logging"].get("access-maxbytes", None),
         access_backupcount=config["logging"].get("access-backupcount", None),

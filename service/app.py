@@ -1,10 +1,48 @@
 import os
 from aiohttp import web
 import aiohttp_jinja2
-import aiorest
-from aiorest.utils import check_exceptions, validate_required_params
 from service import monad
 from typing import Callable, Any, List
+
+
+def validate_required_params(_fun=None, *, names):
+    """Validate that a query has all required parameters.
+
+    Role of this decorator is to force returning a `web.HTTPForbidden`
+    with an explicit message when one of required query parameters
+    is missing.
+
+    This will call the wrapped function with a dict containing
+    all required parameters values.
+
+    :param names: list of required parameters
+    :return: result of wrapped function or `web.HTTPForbidden`
+    """
+
+    def wrapper(fun):
+        async def run(self: web.View, *args, **kwargs):
+            # Note that `self` is a `web.View` object.
+            query = self.request.rel_url.query
+            # Decode POST parameters
+            if self.request.body_exists and self.request.content_type.endswith("json"):
+                data = await self.request.json()
+            else:
+                data = {}
+            # Check and get all parameters
+            vals = {}
+            for name in names:
+                val = data.get(name, None) or query.get(name, None)
+                if not val:
+                    raise web.HTTPForbidden(
+                        reason="{} parameter is required".format(name)
+                    )
+                vals[name] = val
+            # Forward parameters to wrapped functions
+            return await fun(self, *args, required_params=vals, **kwargs)
+
+        return run
+
+    return wrapper if not _fun else wrapper(_fun)
 
 
 def GenerateView(
@@ -14,7 +52,6 @@ def GenerateView(
 ) -> web.View:
     class Wrapper(web.View):
 
-        @check_exceptions
         @validate_required_params(names=["recipe", "template"])
         async def post(self, required_params, **_):
             try:
@@ -22,8 +59,8 @@ def GenerateView(
                     required_params["recipe"],
                     template=required_params["template"]
                 )
-            except Exception:
-                raise aiorest.ErrorResponse(code=1, desc="failed to generate recipe")
+            except Exception as e:
+                raise web.HTTPInternalServerError(reason="failed to generate PDF")
 
             return {"result": "{}/recipe/{}".format(cdn_url, filename)}
 
@@ -40,7 +77,7 @@ def EditorView(*, templates: str, cdn_url: str) -> web.View:
     return Wrapper
 
 
-class Application(aiorest.AioRESTApplication):
+class Application(web.Application):
     def __init__(
         self,
         *args,
