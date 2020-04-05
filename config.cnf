@@ -1,0 +1,17 @@
+[service]
+port = 8080
+;base-url = /
+cdn-url = http://localhost:8081
+jinja2-templates-dir = /etc/service/templates
+pandoc-templates-dir = /etc/service/templates
+pandoc-templates = sample
+recipes-output-dir = /var/recipes
+wkhtmltopdf-bin = /usr/bin/wkhtmltopdf
+
+[logging]
+access-logfile = /var/log/service
+access-maxbytes = 1000000
+access-backupcount = 5
+error-logfile = /var/log/service
+error-maxbytes = 1000000
+error-backupcount = 5

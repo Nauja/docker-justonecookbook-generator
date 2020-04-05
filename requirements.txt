@@ -1,0 +1,5 @@
+aiohttp
+aiohttp-cors
+aiohttp-jinja2
+Jinja2
+wkhtmltopdf
