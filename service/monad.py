@@ -29,33 +29,30 @@ def generate_recipe(
         # Check output directory
         os.makedirs(recipes_output_dir, exist_ok=True)
 
-        tmp = tempfile.NamedTemporaryFile(delete=False, mode="w+", encoding="utf-8")
+        tmp = tempfile.NamedTemporaryFile(delete=True, mode="w+", encoding="utf-8")
         try:
-            try:
-                # Required for pandoc
-                c = "---\n{}\n---".format(content).encode()
+            # Required for pandoc
+            c = "---\n{}\n---".format(content).encode()
 
-                # Generate recipe using pandoc
-                template_dir = os.path.join(pandoc_templates_dir, template)
+            # Generate recipe using pandoc
+            template_dir = os.path.join(pandoc_templates_dir, template)
 
-                argv = [
-                    "pandoc",
-                    "--template", os.path.join(template_dir, "index.html"),
-                    "--css", os.path.join(template_dir, "index.css"),
-                    "--self-contained"
-                ]
+            argv = [
+                "pandoc",
+                "--template", os.path.join(template_dir, "index.html"),
+                "--css", os.path.join(template_dir, "index.css"),
+                "--self-contained"
+            ]
 
-                p = subprocess.run(
-                    argv,
-                    input=c,
-                    stdout=tmp
+            p = subprocess.run(
+                argv,
+                input=c,
+                stdout=tmp
+            )
+            if p.returncode != 0:
+                raise Exception(
+                    "{} failed with exit code {}".format(argv, p.returncode)
                 )
-                if p.returncode != 0:
-                    raise Exception(
-                        "{} failed with exit code {}".format(argv, p.returncode)
-                    )
-            finally:
-                tmp.close()
 
             # Convert from HTML to PDF
             m = hashlib.md5()
@@ -64,11 +61,16 @@ def generate_recipe(
             filename = "{}.pdf".format(m.hexdigest())
 
             argv = wkhtmltopdf_command.format(
-                source=tmp.name,
-                destination=os.path.join(recipes_output_dir, filename)
+                destination=os.path.abspath(
+                    os.path.join(recipes_output_dir, filename)
+                )
             ).split(" ")
 
-            p = subprocess.run(argv)
+            tmp.seek(0)
+            p = subprocess.run(
+                argv,
+                stdin=tmp
+            )
             if p.returncode != 0:
                 raise Exception(
                     "{} failed with exit code {}".format(argv, p.returncode)
@@ -77,6 +79,6 @@ def generate_recipe(
             return filename
         finally:
             # Make sure temp file is deleted
-            os.remove(tmp.name)
+            tmp.close()
 
     return wrapper
