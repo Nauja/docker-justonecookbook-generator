@@ -14,6 +14,8 @@ ADD requirements.txt /home/requirements.txt
 
 WORKDIR /home
 
+ENV PYTHONPATH "${PYTHONPATH}:/home"
+
 RUN apt-get upgrade -y && \
     apt-get update -y && \
     apt-get install -y python3 python3-pip wkhtmltopdf && \

@@ -1,4 +1,5 @@
 import argparse
+from aiohttp import web
 import aiohttp_jinja2
 import jinja2
 import logging
@@ -122,7 +123,7 @@ def main():
         app,
         loader=jinja2.FileSystemLoader(config["service"]["jinja2-templates-dir"])
     )
-    app.run(port=config["service"]["port"])
+    web.run_app(app, port=config["service"]["port"])
 
 
 if __name__ == "__main__":

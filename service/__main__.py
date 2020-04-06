@@ -1,3 +1,3 @@
-from service import main
+from service.main import main
 
-main.main()
+main()
