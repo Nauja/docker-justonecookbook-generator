@@ -118,7 +118,7 @@ def main():
         generate_recipe=monad.generate_recipe(
             pandoc_templates_dir=config["service"]["pandoc-templates-dir"],
             recipes_output_dir=config["service"]["recipes-output-dir"],
-            wkhtmltopdf_bin=config["service"]["wkhtmltopdf-bin"]
+            wkhtmltopdf_command=config["service"]["wkhtmltopdf-command"]
         ),
         pandoc_templates=config["service"]["pandoc-templates"].split(','),
         cdn_url=config["service"]["cdn-url"]

@@ -6,7 +6,7 @@ jinja2-templates-dir = /etc/service/templates
 pandoc-templates-dir = /etc/service/templates
 pandoc-templates = sample
 recipes-output-dir = /var/recipes
-wkhtmltopdf-bin = /usr/bin/wkhtmltopdf
+wkhtmltopdf-command = /usr/bin/wkhtmltopdf {destination}
 
 [logging]
 access-logfile = /var/log/service/access.log

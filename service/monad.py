@@ -3,14 +3,13 @@ import os
 import subprocess
 import tempfile
 import hashlib
-import pdfkit
 
 
 def generate_recipe(
     *,
     pandoc_templates_dir: str,
     recipes_output_dir: str,
-    wkhtmltopdf_bin: str
+    wkhtmltopdf_command: str
 ):
     def wrapper(
         content: str,
@@ -62,10 +61,9 @@ def generate_recipe(
             filename = "{}.pdf".format(m.hexdigest())
 
             tmp.seek(0)
-            argv = [
-                wkhtmltopdf_bin,
-                os.path.join(recipes_output_dir, filename)
-            ]
+            argv = wkhtmltopdf_command.format(
+                destination=os.path.join(recipes_output_dir, filename)
+            ).split(" ")
 
             p = subprocess.run(
                 argv,
