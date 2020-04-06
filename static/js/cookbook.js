@@ -74,7 +74,7 @@ $(document).ready(function() {
 	    $("#toolbar-spinner").append(spinner.el);
 
 		generate_recipe(
-			"---\n" + editor.getValue() + "\n---",
+			editor.getValue(),
 			$("#recipe-template").val(),
 			function(generated) {
 	          isRunning = false;

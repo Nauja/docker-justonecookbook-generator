@@ -32,7 +32,8 @@ def generate_recipe(
 
         tmp = tempfile.NamedTemporaryFile(delete=True, mode="w+", encoding="utf-8")
         try:
-            c = content.encode()
+            # Required for pandoc
+            c = "---\n{}\n---".format(content).encode()
 
             # Generate recipe using pandoc
             template_dir = os.path.join(pandoc_templates_dir, template)
@@ -61,12 +62,19 @@ def generate_recipe(
             filename = "{}.pdf".format(m.hexdigest())
 
             tmp.seek(0)
-            if not pdfkit.from_file(
-                input=tmp,
-                output_path=os.path.join(recipes_output_dir, filename),
-                configuration=pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_bin)
-            ):
-                raise Exception("HTML to PDF generation failed")
+            argv = [
+                wkhtmltopdf_bin,
+                os.path.join(recipes_output_dir, filename)
+            ]
+
+            p = subprocess.run(
+                argv,
+                input=tmp
+            )
+            if p.returncode != 0:
+                raise Exception(
+                    "{} failed with exit code {}".format(argv, p.returncode)
+                )
 
             return filename
         finally:
