@@ -1,4 +1,5 @@
 import os
+import logging
 from aiohttp import web
 import aiohttp_jinja2
 from service import monad
@@ -60,6 +61,7 @@ def GenerateView(
                     template=required_params["template"]
                 )
             except Exception as e:
+                logging.getLogger("aiohttp.server").exception(e)
                 raise web.HTTPInternalServerError(reason="failed to generate PDF")
 
             return {"result": "{}/recipe/{}".format(cdn_url, filename)}

@@ -1,7 +1,7 @@
 [service]
 port = 8080
 ;base-url = /
-cdn-url = http://localhost:8081
+;cdn-url = 
 jinja2-templates-dir = /etc/service/templates
 pandoc-templates-dir = /etc/service/templates
 pandoc-templates = sample

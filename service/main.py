@@ -10,7 +10,11 @@ from service import monad
 DEFAULT_LOGGING_MAXBYTES = 1000000
 DEFAULT_LOGGING_BACKUPCOUNT = 5
 DEFAULT_CONFIG = {
-    "service": {"port": 8080, "base-url": "/"},
+    "service": {
+        "port": 8080,
+        "base-url": "/",
+        "cdn-url": ""
+    },
     "logging": {
         "access-logfile": "",
         "access-maxbytes": DEFAULT_LOGGING_MAXBYTES,
