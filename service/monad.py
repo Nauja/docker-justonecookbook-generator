@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 import hashlib
 import shlex
+import yaml
 
 
 def generate_recipe(
@@ -27,11 +28,16 @@ def generate_recipe(
         :param template: pandoc template to use
         :return: name of generated file in output_dir
         '''
+        # Validate YAML input
+        content = yaml.dump(yaml.safe_load(content))
+
         # Check output directory
         os.makedirs(recipes_output_dir, exist_ok=True)
 
         # Required for pandoc
-        c = "---\n{}\n---".format(content).encode()
+        c = """---
+{}
+---""".format(content).encode()
 
         # Check file against MD5
         m = hashlib.md5()
