@@ -3,13 +3,14 @@ import os
 import subprocess
 import tempfile
 import hashlib
+import shlex
 
 
 def generate_recipe(
     *,
     pandoc_templates_dir: str,
     recipes_output_dir: str,
-    wkhtmltopdf_command: str
+    htmltopdf_command: str
 ):
     def wrapper(
         content: str,
@@ -29,11 +30,21 @@ def generate_recipe(
         # Check output directory
         os.makedirs(recipes_output_dir, exist_ok=True)
 
+        # Required for pandoc
+        c = "---\n{}\n---".format(content).encode()
+
+        # Check file against MD5
+        m = hashlib.md5()
+        m.update(c)
+        m.update(template.encode())
+        filename = "{}.pdf".format(m.hexdigest())
+        destination = os.path.join(
+            recipes_output_dir,
+            filename
+        )
+
         tmp = tempfile.NamedTemporaryFile(delete=True, mode="w+", encoding="utf-8")
         try:
-            # Required for pandoc
-            c = "---\n{}\n---".format(content).encode()
-
             # Generate recipe using pandoc
             template_dir = os.path.join(pandoc_templates_dir, template)
 
@@ -55,16 +66,11 @@ def generate_recipe(
                 )
 
             # Convert from HTML to PDF
-            m = hashlib.md5()
-            m.update(c)
-            m.update(template.encode())
-            filename = "{}.pdf".format(m.hexdigest())
-
-            argv = wkhtmltopdf_command.format(
-                destination=os.path.abspath(
-                    os.path.join(recipes_output_dir, filename)
+            argv = shlex.split(
+                htmltopdf_command.format(
+                    destination=os.path.abspath(destination)
                 )
-            ).split(" ")
+            )
 
             tmp.seek(0)
             p = subprocess.run(

@@ -3,7 +3,6 @@ import logging
 import json
 from aiohttp import web
 import aiohttp_jinja2
-from service import monad
 from typing import Callable, Any, List
 
 
