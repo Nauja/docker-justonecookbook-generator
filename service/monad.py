@@ -48,6 +48,9 @@ def generate_recipe(
             # Generate recipe using pandoc
             template_dir = os.path.join(pandoc_templates_dir, template)
 
+            def absolute_path(_):
+                return '"{}"'.format(os.path.abspath(_))
+
             argv = [
                 "pandoc",
                 "--template", os.path.join(template_dir, "index.html"),
@@ -68,7 +71,7 @@ def generate_recipe(
             # Convert from HTML to PDF
             argv = shlex.split(
                 htmltopdf_command.format(
-                    destination=os.path.abspath(destination)
+                    destination=absolute_path(destination)
                 )
             )
 
