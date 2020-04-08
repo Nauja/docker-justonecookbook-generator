@@ -5,7 +5,7 @@ import aiohttp_jinja2
 import jinja2
 import logging
 from service.app import Application
-from service import monad, config
+from service import monad, configuration
 from builtins import int
 
 
@@ -94,27 +94,27 @@ def main():
     if not os.path.isdir(config_dir):
         raise NotADirectoryError(config_dir)
 
-    options = config.load(os.path.join(config_dir, "config.cnf"))
+    config = configuration.load(os.path.join(config_dir, "config.cnf"))
 
     logging.basicConfig(level=logging.INFO)
 
     setup_logging(
-        access_logfile=options["logging"].get("access-logfile", None),
-        access_maxbytes=options["logging"].get("access-maxbytes", None),
-        access_backupcount=options["logging"].get("access-backupcount", None),
-        error_logfile=options["logging"].get("error-logfile", None),
-        error_maxbytes=options["logging"].get("error-maxbytes", None),
-        error_backupcount=options["logging"].get("error-backupcount", None),
+        access_logfile=config["logging"].get("access-logfile", None),
+        access_maxbytes=int(config["logging"].get("access-maxbytes", None)),
+        access_backupcount=int(config["logging"].get("access-backupcount", None)),
+        error_logfile=config["logging"].get("error-logfile", None),
+        error_maxbytes=int(config["logging"].get("error-maxbytes", None)),
+        error_backupcount=int(config["logging"].get("error-backupcount", None)),
     )
 
     run(
-        cdn_url=options["service"]["cdn-url"],
-        port=options["service"]["port"],
-        recipes_output_dir=options["service"]["recipes-output-dir"],
+        cdn_url=config["service"]["cdn-url"],
+        port=int(config["service"]["port"]),
+        recipes_output_dir=config["service"]["recipes-output-dir"],
         jinja2_templates_dir=config_dir,
         pandoc_templates_dir=os.path.join(config_dir, "templates-enabled"),
-        pandoc_command=options["service"]["pandoc-command"],
-        htmltopdf_command=options["service"]["htmltopdf-command"]
+        pandoc_command=config["service"]["pandoc-command"],
+        htmltopdf_command=config["service"]["htmltopdf-command"]
     )
 
 

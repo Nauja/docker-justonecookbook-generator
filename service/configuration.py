@@ -34,11 +34,4 @@ def load(path):
     for s in config.sections():
         result.setdefault(s, {}).update(config.items(s))
 
-    result["service"]["port"] = int(result["service"]["port"])
-    result["logging"]["access-maxbytes"] = int(result["logging"]["access-maxbytes"])
-    result["logging"]["access-backupcount"] = int(
-        result["logging"]["access-backupcount"]
-    )
-    result["logging"]["error-maxbytes"] = int(result["logging"]["error-maxbytes"])
-    result["logging"]["error-backupcount"] = int(result["logging"]["error-backupcount"])
     return result
