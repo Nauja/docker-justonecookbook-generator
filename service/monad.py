@@ -7,11 +7,61 @@ import shlex
 import yaml
 
 
+def absolute_path(_):
+    return '"{}"'.format(os.path.abspath(_))
+
+
+def run_pandoc(*, command: str, templates_dir: str):
+    def wrapper(content: str, *, template: str, stdout):
+        template_dir = os.path.join(templates_dir, template)
+
+        argv = shlex.split(
+            command.format(
+                html=absolute_path(os.path.join(template_dir, "index.html")),
+                css=absolute_path(os.path.join(template_dir, "index.css"))
+            )
+        )
+
+        p = subprocess.run(
+            argv,
+            input=content,
+            stdout=stdout
+        )
+
+        if p.returncode != 0:
+            raise Exception(
+                "{} failed with exit code {}".format(argv, p.returncode)
+            )
+
+    return wrapper
+
+
+def run_htmltopdf(*, command: str):
+    def wrapper(destination: str, *, stdin):
+        argv = shlex.split(
+            command.format(
+                destination=absolute_path(destination)
+            )
+        )
+
+        p = subprocess.run(
+            argv,
+            stdin=stdin
+        )
+
+        if p.returncode != 0:
+            raise Exception(
+                "{} failed with exit code {}".format(argv, p.returncode)
+            )
+
+    return wrapper
+
+
 def generate_recipe(
     *,
-    pandoc_templates_dir: str,
-    recipes_output_dir: str,
-    htmltopdf_command: str
+    pandoc,
+    htmltopdf,
+    recipes_output_dir: str
 ):
     def wrapper(
         content: str,
@@ -22,22 +72,21 @@ def generate_recipe(
 
         May throw an exception in case of IO error.
 
-        :param pandoc_templates_dir: directory containing pandoc templates
+        :param pandoc: run pandoc commandline
+        :param htmltopdf: run htmltopdf commandline
         :param recipes_output_dir: directory for generated recipes
         :param content: a YAML formatted recipe
         :param template: pandoc template to use
-        :return: name of generated file in output_dir
+        :return: name of generated file in recipes_output_dir
         '''
+        if not os.path.isdir(recipes_output_dir):
+            raise NotADirectoryError(recipes_output_dir)
+
         # Validate YAML input
         content = yaml.dump(yaml.safe_load(content))
 
-        # Check output directory
-        os.makedirs(recipes_output_dir, exist_ok=True)
-
         # Required for pandoc
-        c = """---
-{}
----""".format(content).encode()
+        c = """---\n{}\n---""".format(content).encode()
 
         # Check file against MD5
         m = hashlib.md5()
@@ -49,47 +98,24 @@ def generate_recipe(
             filename
         )
 
-        tmp = tempfile.NamedTemporaryFile(delete=True, mode="w+", encoding="utf-8")
+        # Don't generate twice the same file
+        if os.path.exists(destination):
+            return filename
+
+        tmp = tempfile.NamedTemporaryFile(mode="w+", encoding="utf-8")
         try:
-            # Generate recipe using pandoc
-            template_dir = os.path.join(pandoc_templates_dir, template)
-
-            def absolute_path(_):
-                return '"{}"'.format(os.path.abspath(_))
-
-            argv = [
-                "pandoc",
-                "--template", os.path.join(template_dir, "index.html"),
-                "--css", os.path.join(template_dir, "index.css"),
-                "--self-contained"
-            ]
-
-            p = subprocess.run(
-                argv,
-                input=c,
+            pandoc(
+                content=c,
+                template=template,
                 stdout=tmp
-            )
-            if p.returncode != 0:
-                raise Exception(
-                    "{} failed with exit code {}".format(argv, p.returncode)
-                )
-
-            # Convert from HTML to PDF
-            argv = shlex.split(
-                htmltopdf_command.format(
-                    destination=absolute_path(destination)
-                )
             )
 
             tmp.seek(0)
-            p = subprocess.run(
-                argv,
+
+            htmltopdf(
+                destination=destination,
                 stdin=tmp
             )
-            if p.returncode != 0:
-                raise Exception(
-                    "{} failed with exit code {}".format(argv, p.returncode)
-                )
 
             return filename
         finally:

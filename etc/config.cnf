@@ -2,10 +2,8 @@
 port = 8080
 ;base-url = /
 ;cdn-url = 
-jinja2-templates-dir = /etc/service/templates
-pandoc-templates-dir = /etc/service/templates
-pandoc-templates = sample
 recipes-output-dir = /var/recipes
+pandoc-command = pandoc --template {html} --css {css} --self-contained
 htmltopdf-command = /usr/bin/wkhtmltopdf - {destination}
 
 [logging]

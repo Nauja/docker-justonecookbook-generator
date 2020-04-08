@@ -1,56 +1,12 @@
+import os
 import argparse
 from aiohttp import web
 import aiohttp_jinja2
 import jinja2
 import logging
 from service.app import Application
-from service import monad
-
-
-DEFAULT_LOGGING_MAXBYTES = 1000000
-DEFAULT_LOGGING_BACKUPCOUNT = 5
-DEFAULT_CONFIG = {
-    "service": {
-        "port": 8080,
-        "base-url": "/",
-        "cdn-url": ""
-    },
-    "logging": {
-        "access-logfile": "",
-        "access-maxbytes": DEFAULT_LOGGING_MAXBYTES,
-        "access-backupcount": DEFAULT_LOGGING_BACKUPCOUNT,
-        "error-logfile": "",
-        "error-maxbytes": DEFAULT_LOGGING_MAXBYTES,
-        "error-backupcount": DEFAULT_LOGGING_BACKUPCOUNT,
-    },
-    "ssl": {"certfile": "", "keyfile": ""},
-}
-
-
-def load_config(path):
-    """Load the service configuration from file.
-
-    Returns default parameters overriden by the ones in the configuration file.
-
-    :param path: file to load
-    :return: a dict containing loaded configuration
-    """
-    import configparser
-
-    result = dict(DEFAULT_CONFIG)
-    config = configparser.ConfigParser()
-    config.read(path)
-    for s in config.sections():
-        result.setdefault(s, {}).update(config.items(s))
-
-    result["service"]["port"] = int(result["service"]["port"])
-    result["logging"]["access-maxbytes"] = int(result["logging"]["access-maxbytes"])
-    result["logging"]["access-backupcount"] = int(
-        result["logging"]["access-backupcount"]
-    )
-    result["logging"]["error-maxbytes"] = int(result["logging"]["error-maxbytes"])
-    result["logging"]["error-backupcount"] = int(result["logging"]["error-backupcount"])
-    return result
+from service import monad, config
+from builtins import int
 
 
 def setup_logging(
@@ -79,55 +35,87 @@ def setup_logging(
         logging.getLogger("aiohttp.access").addHandler(
             RotatingFileHandler(
                 access_logfile,
-                maxBytes=access_maxbytes or DEFAULT_LOGGING_MAXBYTES,
-                backupCount=access_backupcount or DEFAULT_LOGGING_BACKUPCOUNT,
+                maxBytes=access_maxbytes,
+                backupCount=access_backupcount,
             )
         )
     if error_logfile:
         logging.getLogger("aiohttp.server").addHandler(
             RotatingFileHandler(
                 error_logfile,
-                maxBytes=error_maxbytes or DEFAULT_LOGGING_MAXBYTES,
-                backupCount=error_backupcount or DEFAULT_LOGGING_BACKUPCOUNT,
+                maxBytes=error_maxbytes,
+                backupCount=error_backupcount,
             )
         )
+
+
+def run(
+    *,
+    cdn_url: str,
+    port: int,
+    recipes_output_dir: str,
+    jinja2_templates_dir: str,
+    pandoc_templates_dir: str,
+    pandoc_command: str,
+    htmltopdf_command: str
+):
+    os.makedirs(recipes_output_dir, exist_ok=True)
+
+    app = Application(
+        generate_recipe=monad.generate_recipe(
+            pandoc=monad.run_pandoc(
+                command=pandoc_command,
+                templates_dir=pandoc_templates_dir
+            ),
+            htmltopdf=monad.run_htmltopdf(
+                command=htmltopdf_command,
+            ),
+            recipes_output_dir=recipes_output_dir
+        ),
+        pandoc_templates=os.listdir(pandoc_templates_dir),
+        cdn_url=cdn_url
+    )
+    aiohttp_jinja2.setup(
+        app,
+        loader=jinja2.FileSystemLoader(jinja2_templates_dir)
+    )
+    web.run_app(app, port=port)
 
 
 def main():
     parser = argparse.ArgumentParser(prog="Service", description="Help")
     parser.add_argument(
-        "--config", type=str, default="service.cnf", help="configuration file"
+        "directory", type=str, help="config directory"
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbosity level")
     args = parser.parse_args()
 
-    config = load_config(args.config)
+    config_dir = args.directory
+    if not os.path.isdir(config_dir):
+        raise NotADirectoryError(config_dir)
+
+    options = config.load(os.path.join(config_dir, "config.cnf"))
 
     logging.basicConfig(level=logging.INFO)
 
     setup_logging(
-        access_logfile=config["logging"].get("access-logfile", None),
-        access_maxbytes=config["logging"].get("access-maxbytes", None),
-        access_backupcount=config["logging"].get("access-backupcount", None),
-        error_logfile=config["logging"].get("error-logfile", None),
-        error_maxbytes=config["logging"].get("error-maxbytes", None),
-        error_backupcount=config["logging"].get("error-backupcount", None),
+        access_logfile=options["logging"].get("access-logfile", None),
+        access_maxbytes=options["logging"].get("access-maxbytes", None),
+        access_backupcount=options["logging"].get("access-backupcount", None),
+        error_logfile=options["logging"].get("error-logfile", None),
+        error_maxbytes=options["logging"].get("error-maxbytes", None),
+        error_backupcount=options["logging"].get("error-backupcount", None),
     )
 
-    app = Application(
-        generate_recipe=monad.generate_recipe(
-            pandoc_templates_dir=config["service"]["pandoc-templates-dir"],
-            recipes_output_dir=config["service"]["recipes-output-dir"],
-            htmltopdf_command=config["service"]["htmltopdf-command"]
-        ),
-        pandoc_templates=config["service"]["pandoc-templates"].split(','),
-        cdn_url=config["service"]["cdn-url"]
+    run(
+        cdn_url=options["service"]["cdn-url"],
+        port=options["service"]["port"],
+        recipes_output_dir=options["service"]["recipes-output-dir"],
+        jinja2_templates_dir=config_dir,
+        pandoc_templates_dir=os.path.join(config_dir, "templates-enabled"),
+        pandoc_command=options["service"]["pandoc-command"],
+        htmltopdf_command=options["service"]["htmltopdf-command"]
     )
-    aiohttp_jinja2.setup(
-        app,
-        loader=jinja2.FileSystemLoader(config["service"]["jinja2-templates-dir"])
-    )
-    web.run_app(app, port=config["service"]["port"])
 
 
 if __name__ == "__main__":

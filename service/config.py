@@ -1,0 +1,44 @@
+DEFAULT_LOGGING_MAXBYTES = 1000000
+DEFAULT_LOGGING_BACKUPCOUNT = 5
+DEFAULT_CONFIG = {
+    "service": {
+        "port": 8080,
+        "base-url": "/",
+        "cdn-url": ""
+    },
+    "logging": {
+        "access-logfile": "",
+        "access-maxbytes": DEFAULT_LOGGING_MAXBYTES,
+        "access-backupcount": DEFAULT_LOGGING_BACKUPCOUNT,
+        "error-logfile": "",
+        "error-maxbytes": DEFAULT_LOGGING_MAXBYTES,
+        "error-backupcount": DEFAULT_LOGGING_BACKUPCOUNT,
+    },
+    "ssl": {"certfile": "", "keyfile": ""},
+}
+
+
+def load(path):
+    """Load the service configuration from file.
+
+    Returns default parameters overriden by the ones in the configuration file.
+
+    :param path: file to load
+    :return: a dict containing loaded configuration
+    """
+    import configparser
+
+    result = dict(DEFAULT_CONFIG)
+    config = configparser.ConfigParser()
+    config.read(path)
+    for s in config.sections():
+        result.setdefault(s, {}).update(config.items(s))
+
+    result["service"]["port"] = int(result["service"]["port"])
+    result["logging"]["access-maxbytes"] = int(result["logging"]["access-maxbytes"])
+    result["logging"]["access-backupcount"] = int(
+        result["logging"]["access-backupcount"]
+    )
+    result["logging"]["error-maxbytes"] = int(result["logging"]["error-maxbytes"])
+    result["logging"]["error-backupcount"] = int(result["logging"]["error-backupcount"])
+    return result
