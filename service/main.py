@@ -6,7 +6,6 @@ import jinja2
 import logging
 from service.app import Application
 from service import monad, configuration
-from builtins import int
 
 
 def setup_logging(
@@ -56,8 +55,7 @@ def run(
     recipes_output_dir: str,
     jinja2_templates_dir: str,
     pandoc_templates_dir: str,
-    pandoc_command: str,
-    htmltopdf_command: str
+    pandoc_command: str
 ):
     os.makedirs(recipes_output_dir, exist_ok=True)
 
@@ -66,9 +64,6 @@ def run(
             pandoc=monad.run_pandoc(
                 command=pandoc_command,
                 templates_dir=pandoc_templates_dir
-            ),
-            htmltopdf=monad.run_htmltopdf(
-                command=htmltopdf_command,
             ),
             recipes_output_dir=recipes_output_dir
         ),
@@ -113,8 +108,7 @@ def main():
         recipes_output_dir=config["service"]["recipes-output-dir"],
         jinja2_templates_dir=config_dir,
         pandoc_templates_dir=os.path.join(config_dir, "templates-enabled"),
-        pandoc_command=config["service"]["pandoc-command"],
-        htmltopdf_command=config["service"]["htmltopdf-command"]
+        pandoc_command=config["service"]["pandoc-command"]
     )
 
 

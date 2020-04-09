@@ -15,12 +15,7 @@ body {
   font-size: 14px;
 }
 
-#editor {
-  margin: 0;
-  width: 35em;
-}
-
-#recipe {
+#recipe-editor, #recipe-preview {
   margin: 0;
   width: 35em;
   padding: 0;
@@ -71,7 +66,7 @@ h1 {
 
 /* phone height */
 @media (min-height: 0px) and (max-height: 540px) {
-  #editor, #recipe {
+  #recipe-editor, #recipe-preview {
     height: 20em;
   }
 
@@ -82,7 +77,7 @@ h1 {
 
 /* pc but small height */
 @media (min-height: 540px) and (max-height: 620px) {
-  #editor, #recipe {
+  #recipe-editor, #recipe-preview {
     height: 25em;
   }
 
@@ -92,7 +87,7 @@ h1 {
 }
 
 @media (min-height: 620px) {
-  #editor, #recipe {
+  #recipe-editor, #recipe-preview {
     height: 30em;
   }
 
@@ -102,11 +97,11 @@ h1 {
 }
 
 @media (max-width: 767.98px) {
-  .block, #editor, #recipe {
+  .block, #recipe-editor, #recipe-preview {
     width: 100%;
   }
 
-  #editor, #recipe {
+  #recipe-editor, #recipe-preview {
     border-radius: 0;
   }
 }
@@ -116,7 +111,7 @@ h1 {
     width: 45%;
   }
 
-  #editor, #recipe {
+  #recipe-editor, #recipe-preview {
     width: 100%;
   }
 }

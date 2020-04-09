@@ -6,13 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="{{ cdn_url }}/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="{{ cdn_url }}/spin/spin.min.css">
-    <link rel="stylesheet" type="text/css" href="{{ cdn_url }}/css/theme.css">
+    <link rel="stylesheet" type="text/css" href="{{ cdn_url }}/css/prettyrecipe.css">
     <script type="text/javascript" src="{{ cdn_url }}/js/jquery-3.4.1.min.js"></script>
     <script type="text/javascript" src="{{ cdn_url }}/ace/ace.js" charset="utf-8"></script>
     <script type="text/javascript" src="{{ cdn_url }}/spin/spin.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="{{ cdn_url }}/ace/mode-yaml.js" charset="utf-8"></script>
     <script type="text/javascript" src="{{ cdn_url }}/ace/theme-monokai.js" charset="utf-8"></script>
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
 	<script type="text/javascript" src="{{ cdn_url }}/js/prettyrecipe.js"></script>
   </head>
   <body class="row align-items-center">
@@ -24,7 +23,7 @@
       </div>
       <div class="row justify-content-center">
         <div class="col-auto block">
-          <pre id="editor" class="outline-box"></pre>
+          <pre id="recipe-editor" class="outline-box"></pre>
           <div class="row toolbar justify-content-lg-end justify-content-center">
             <div class="col-auto">
 		      <select id="recipe-template" style="float: left;">
@@ -42,7 +41,7 @@
           </iframe>
           <div class="row toolbar justify-content-lg-end justify-content-center">
             <div class="col-auto">
-              <a href="#" id="toolbar-open" class="toolbar-button" style="float: left;">Open</a>
+              <a href="#" id="toolbar-print" class="toolbar-button" style="float: left;">Print</a>
             </div>
           </div>
         </div>

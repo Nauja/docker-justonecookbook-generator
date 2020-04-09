@@ -4,7 +4,7 @@
 const sandboxYaml = "https://raw.githubusercontent.com/Nauja/pandoc-cookbook-template/master/example/sandbox.yaml";
 
 $(document).ready(function() {
-  var editor = ace.edit("editor");
+  var editor = ace.edit("recipe-editor");
   editor.setTheme("ace/theme/monokai");
   editor.setOptions({
     fontSize: "14px"
@@ -20,8 +20,8 @@ $(document).ready(function() {
     editor.setValue(data, -1);
   });
 
-  $("#toolbar-open").click(function() {
-    window.open($("#recipe").attr("src"));
+  $("#toolbar-print").click(function() {
+    document.getElementById('recipe-preview').contentWindow.print();
   });
 
 	function generate_recipe(content, template, success, error) {

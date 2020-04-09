@@ -5,48 +5,27 @@ import tempfile
 import hashlib
 import shlex
 import yaml
-
-
-def absolute_path(_):
-    return '"{}"'.format(os.path.abspath(_))
+import shutil
 
 
 def run_pandoc(*, command: str, templates_dir: str):
-    def wrapper(content: str, *, template: str, stdout):
+    def wrapper(content: str, *, template: str, destination: str):
+        def absolute_path(_):
+            return '"{}"'.format(os.path.abspath(_))
+
         template_dir = os.path.join(templates_dir, template)
 
         argv = shlex.split(
             command.format(
                 html=absolute_path(os.path.join(template_dir, "index.html")),
-                css=absolute_path(os.path.join(template_dir, "index.css"))
-            )
-        )
-
-        p = subprocess.run(
-            argv,
-            input=content,
-            stdout=stdout
-        )
-
-        if p.returncode != 0:
-            raise Exception(
-                "{} failed with exit code {}".format(argv, p.returncode)
-            )
-
-    return wrapper
-
-
-def run_htmltopdf(*, command: str):
-    def wrapper(destination: str, *, stdin):
-        argv = shlex.split(
-            command.format(
+                css=absolute_path(os.path.join(template_dir, "index.css")),
                 destination=absolute_path(destination)
             )
         )
 
         p = subprocess.run(
             argv,
-            stdin=stdin
+            input=content
         )
 
         if p.returncode != 0:
@@ -60,7 +39,6 @@ def run_htmltopdf(*, command: str):
 def generate_recipe(
     *,
     pandoc,
-    htmltopdf,
     recipes_output_dir: str
 ):
     def wrapper(
@@ -73,7 +51,6 @@ def generate_recipe(
         May throw an exception in case of IO error.
 
         :param pandoc: run pandoc commandline
-        :param htmltopdf: run htmltopdf commandline
         :param recipes_output_dir: directory for generated recipes
         :param content: a YAML formatted recipe
         :param template: pandoc template to use
@@ -102,24 +79,20 @@ def generate_recipe(
         if os.path.exists(destination):
             return filename
 
-        tmp = tempfile.NamedTemporaryFile(mode="w+", encoding="utf-8")
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
         try:
+            tmp.close()
+
             pandoc(
                 content=c,
                 template=template,
-                stdout=tmp
+                destination=tmp.name
             )
 
-            tmp.seek(0)
-
-            htmltopdf(
-                destination=destination,
-                stdin=tmp
-            )
+            shutil.copyfile(tmp.name, destination)
 
             return filename
         finally:
-            # Make sure temp file is deleted
-            tmp.close()
+            os.remove(tmp.name)
 
     return wrapper

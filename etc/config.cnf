@@ -3,8 +3,7 @@ port = 8080
 ;base-url = /
 ;cdn-url = 
 recipes-output-dir = /var/recipes
-pandoc-command = pandoc --template {html} --css {css} --self-contained
-htmltopdf-command = /usr/bin/wkhtmltopdf - {destination}
+pandoc-command = pandoc --template {html} --css {css} --self-contained -t html --pdf-engine="wkhtmltopdf" -o {destination}
 
 [logging]
 access-logfile = /var/log/service/access.log
