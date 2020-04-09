@@ -48,15 +48,14 @@ def validate_required_params(_fun=None, *, names):
 
 def GenerateView(
     *,
-    generate_recipe: Callable[[str], Any],
-    cdn_url: str
+    generate_recipe: Callable[[str], Any]
 ) -> web.View:
     class Wrapper(web.View):
 
         @validate_required_params(names=["recipe", "template"])
         async def post(self, required_params, **_):
             try:
-                filename = generate_recipe(
+                filename = await generate_recipe(
                     required_params["recipe"],
                     template=required_params["template"]
                 )
@@ -68,7 +67,7 @@ def GenerateView(
                 text=json.dumps({
                     "result": "Ok",
                     "params": {
-                        "result": "{}/recipes/{}".format(cdn_url, filename)
+                        "result": "/recipe/{}".format(filename)
                     }
                 })
             )
@@ -94,6 +93,7 @@ class Application(web.Application):
         pandoc_templates: List[str],
         cdn_url: str,
         base_url: str=None,
+        recipes_output_dir: str,
         **kwargs
     ):
         super(Application, self).__init__(*args, **kwargs)
@@ -102,10 +102,10 @@ class Application(web.Application):
         self.router.add_view(
             base_url + "generate",
             GenerateView(
-                generate_recipe=generate_recipe,
-                cdn_url=cdn_url
+                generate_recipe=generate_recipe
             )
         )
+        self.router.add_static(base_url + "recipe", recipes_output_dir)
         self.router.add_view(
             base_url,
             EditorView(

@@ -4,6 +4,8 @@ from aiohttp import web
 import aiohttp_jinja2
 import jinja2
 import logging
+import asyncio
+import sys
 from service.app import Application
 from service import monad, configuration
 
@@ -57,6 +59,9 @@ def run(
     pandoc_templates_dir: str,
     pandoc_command: str
 ):
+    if 'win32' in sys.platform:
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
     os.makedirs(recipes_output_dir, exist_ok=True)
 
     app = Application(
@@ -68,7 +73,8 @@ def run(
             recipes_output_dir=recipes_output_dir
         ),
         pandoc_templates=os.listdir(pandoc_templates_dir),
-        cdn_url=cdn_url
+        cdn_url=cdn_url,
+        recipes_output_dir=recipes_output_dir
     )
     aiohttp_jinja2.setup(
         app,

@@ -6,10 +6,11 @@ import hashlib
 import shlex
 import yaml
 import shutil
+import asyncio
 
 
 def run_pandoc(*, command: str, templates_dir: str):
-    def wrapper(content: str, *, template: str, destination: str):
+    async def wrapper(content: str, *, template: str, destination: str):
         def absolute_path(_):
             return '"{}"'.format(os.path.abspath(_))
 
@@ -23,11 +24,13 @@ def run_pandoc(*, command: str, templates_dir: str):
             )
         )
 
-        p = subprocess.run(
-            argv,
-            input=content
+        p = await asyncio.create_subprocess_exec(
+            *argv,
+            stdin=asyncio.subprocess.PIPE
         )
 
+        await p.communicate(input=content)
+        await p.wait()
         if p.returncode != 0:
             raise Exception(
                 "{} failed with exit code {}".format(argv, p.returncode)
@@ -41,7 +44,7 @@ def generate_recipe(
     pandoc,
     recipes_output_dir: str
 ):
-    def wrapper(
+    async def wrapper(
         content: str,
         *,
         template: str
@@ -83,7 +86,7 @@ def generate_recipe(
         try:
             tmp.close()
 
-            pandoc(
+            await pandoc(
                 content=c,
                 template=template,
                 destination=tmp.name
