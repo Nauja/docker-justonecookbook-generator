@@ -4,24 +4,51 @@
 const sandboxYaml = "https://raw.githubusercontent.com/Nauja/pandoc-cookbook-template/master/example/sandbox.yaml";
 
 $(document).ready(function() {
-  var editor = ace.edit("recipe-editor");
-  editor.setTheme("ace/theme/monokai");
-  editor.setOptions({
+	function FormEditor() {
+  		let form = $("#pr-editor-form");
+  		let title = form.find("#pr-editor-form-title").first();
+  		let course = form.find("#pr-editor-form-course").first();
+  		let cuisine = form.find("#pr-editor-form-cuisine").first();
+  		let difficulty = form.find("#pr-editor-form-difficulty").first();
+  		let summary = form.find("#pr-editor-form-summary").first();
+
+		return {
+			"this": form,
+			"from_source": function(source) {
+				let obj = jsyaml.load(source);
+				title.val(obj["title"]);
+				course.val(obj["course"]);
+				cuisine.val(obj["cuisine"]);
+				difficulty.val(obj["difficulty"]);
+				summary.val(obj["summary"]);
+			}
+		};
+	}
+
+  var source_editor = ace.edit("pr-editor-source");
+  var form_editor = new FormEditor();
+  source_editor.setTheme("ace/theme/monokai");
+  source_editor.setOptions({
     fontSize: "14px"
   });
-  editor.session.setMode("ace/mode/yaml");
-  editor.focus();
+  source_editor.session.setMode("ace/mode/yaml");
+  source_editor.focus();
 
   $.get(sandboxYaml, function(data) {
     data = data.substring(data.indexOf("\n") + 1);
     data = data.substring(data.lastIndexOf("\n"), -1 );
     data = data.substring(data.lastIndexOf("\n"), -1 );
     data = data + "\n";
-    editor.setValue(data, -1);
+    source_editor.setValue(data, -1);
+    source_to_form();
   });
 
-  $("#toolbar-print").click(function() {
-    document.getElementById('recipe-preview').contentWindow.print();
+	function source_to_form() {
+		form_editor.from_source(source_editor.getValue());
+	}
+
+  $("#pr-toolbar-print").click(function() {
+    document.getElementById('pr-preview').contentWindow.print();
   });
 
 	function generate_recipe(content, template, success, error) {
@@ -48,7 +75,7 @@ $(document).ready(function() {
 	}
 
   var isRunning = false;
-	$("#toolbar-run").click(function() {
+	$("#pr-toolbar-run").click(function() {
 	    if (isRunning)
 	      return;
 	    isRunning = true;
@@ -71,16 +98,16 @@ $(document).ready(function() {
 	      left: '20px', // Left position relative to parent
 	      shadow: '0 0 1px transparent', // Box-shadow for the lines
 	    }).spin();
-	    $("#toolbar-spinner").append(spinner.el);
+	    $("#pr-toolbar-spinner").append(spinner.el);
 
 		generate_recipe(
-			editor.getValue(),
-			$("#recipe-template").val(),
+			source_editor.getValue(),
+			$("#pr-template").val(),
 			function(generated) {
 	          isRunning = false;
 	          spinner.stop();
-				$("#recipe-preview").attr('src', generated);
-          		$("#recipe-block").removeClass("recipe-hidden");
+				$("#pr-preview").attr('src', generated);
+          		$("#pr-block").removeClass("pr-hidden");
 			},
 			function(error) {
 	          isRunning = false;

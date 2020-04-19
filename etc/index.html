@@ -12,6 +12,7 @@
     <script type="text/javascript" src="{{ cdn_url }}/spin/spin.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="{{ cdn_url }}/ace/mode-yaml.js" charset="utf-8"></script>
     <script type="text/javascript" src="{{ cdn_url }}/ace/theme-monokai.js" charset="utf-8"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.13.1/js-yaml.min.js"></script>
 	<script type="text/javascript" src="{{ cdn_url }}/js/prettyrecipe.js"></script>
   </head>
   <body class="row align-items-center">
@@ -23,25 +24,57 @@
       </div>
       <div class="row justify-content-center">
         <div class="col-auto block">
-          <pre id="recipe-editor" class="outline-box"></pre>
-          <div class="row toolbar justify-content-lg-end justify-content-center">
+          <div id="pr-editor" class="pr-outline-box">
+            <pre id="pr-editor-source" class="pr-hidden"></pre>
+            <div id="pr-editor-form">
+              <form>
+              	<div class="row">
+              	  <div class="col-12">
+	                <label for="pr-editor-form-title">Title:</label>
+	                <input id="pr-editor-form-title" type="text"/>
+	              </div>
+	            </div>
+	            <div class="row">
+                  <div class="col-4">
+	                <label for="pr-editor-form-course">Course:</label>
+	                <input id="pr-editor-form-course" type="text"/>
+	              </div>
+              	  <div class="col-4">
+	                <label for="pr-editor-form-cuisine">Cuisine:</label>
+	                <input id="pr-editor-form-cuisine" type="text"/>
+	              </div>
+              	  <div class="col-4">
+	                <label for="pr-editor-form-difficulty">Difficulty:</label>
+	                <input id="pr-editor-form-difficulty" type="text"/>
+	              </div>
+	            </div>
+              	<div class="row">
+              	  <div class="col-12">
+	                <label for="pr-editor-form-summary">Summary:</label>
+	                <textarea id="pr-editor-form-summary"></textarea>
+	              </div>
+	            </div>
+              </form>
+            </div>
+          </div>
+          <div class="row pr-toolbar justify-content-lg-end justify-content-center">
             <div class="col-auto">
-		      <select id="recipe-template" style="float: left;">
+		      <select id="pr-toolbar-template" style="float: left;">
 		        {% for template in templates %}
 			    <option value="{{ template }}" selected>{{ template }}</option>
 			    {% endfor %}
 			  </select>
-              <a href="#" id="toolbar-run" class="toolbar-button" style="float: left;">Run</a>
-              <div id="toolbar-spinner" style="float: left;"></div>
+              <a href="#" id="pr-toolbar-run" class="pr-toolbar-button" style="float: left;">Run</a>
+              <div id="pr-toolbar-spinner" style="float: left;"></div>
             </div>
           </div>
         </div>
-        <div id="recipe-block" class="col-auto recipe-hidden block">
-          <iframe id="recipe-preview" class="outline-box" frameborder="0" allowfullscreen>
+        <div id="pr-block" class="col-auto pr-hidden block">
+          <iframe id="pr-preview" class="pr-outline-box" frameborder="0" allowfullscreen>
           </iframe>
-          <div class="row toolbar justify-content-lg-end justify-content-center">
+          <div class="row pr-toolbar justify-content-lg-end justify-content-center">
             <div class="col-auto">
-              <a href="#" id="toolbar-print" class="toolbar-button" style="float: left;">Print</a>
+              <a href="#" id="pr-toolbar-print" class="pr-toolbar-button" style="float: left;">Print</a>
             </div>
           </div>
         </div>
