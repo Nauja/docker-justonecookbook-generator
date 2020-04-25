@@ -1,6 +1,5 @@
 __all__ = ["generate"]
 import os
-import subprocess
 import tempfile
 import hashlib
 import shlex
@@ -62,11 +61,14 @@ def generate_recipe(
         if not os.path.isdir(recipes_output_dir):
             raise NotADirectoryError(recipes_output_dir)
 
-        # Validate YAML input
-        content = yaml.dump(yaml.safe_load(content))
+        try:
+            # Validate YAML input
+            c = yaml.safe_dump(yaml.safe_load(content))
 
-        # Required for pandoc
-        c = """---\n{}\n---""".format(content).encode()
+            # Required for pandoc
+            c = """---\n{}\n---""".format(c).encode()
+        except Exception as e:
+            raise Exception("Invalid YAML input") from e
 
         # Check file against MD5
         m = hashlib.md5()

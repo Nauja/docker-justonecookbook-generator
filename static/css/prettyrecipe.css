@@ -21,6 +21,10 @@ body {
   padding: 0;
 }
 
+#pr-editor-source {
+  height: 100%;
+}
+
 #pr-editor-form {
   padding: 1em;
   border-radius: 5px;
@@ -59,7 +63,7 @@ body {
   margin-bottom: 2em;
 }
 
-.pr-toolbar-button {
+.pr-toolbar-button, .pr-toolbar-switch {
   font-family: "Segoe UI";
   color: #fff;
   text-decoration: none;
@@ -71,7 +75,11 @@ body {
   padding-bottom: 0.25em;
 }
 
-.pr-toolbar-button:hover {
+.pr-toolbar-switch.pr-toolbar-selected {
+  background-color: #4e545a;
+}
+
+.pr-toolbar-button:hover, .pr-toolbar-switch:hover {
   color: #fff;
   text-decoration: none;
 }

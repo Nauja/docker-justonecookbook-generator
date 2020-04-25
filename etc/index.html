@@ -25,7 +25,7 @@
       <div class="row justify-content-center">
         <div class="col-auto block">
           <div id="pr-editor" class="pr-outline-box">
-            <pre id="pr-editor-source" class="pr-hidden"></pre>
+            <pre id="pr-editor-source" class="pr-hidden" data-template-url="{{ cdn_url }}/sandbox.yaml"></pre>
             <div id="pr-editor-form">
               <form>
               	<div class="row">
@@ -35,10 +35,6 @@
 	              </div>
 	            </div>
 	            <div class="row">
-                  <div class="col-4">
-	                <label for="pr-editor-form-course">Course:</label>
-	                <input id="pr-editor-form-course" type="text"/>
-	              </div>
               	  <div class="col-4">
 	                <label for="pr-editor-form-cuisine">Cuisine:</label>
 	                <input id="pr-editor-form-cuisine" type="text"/>
@@ -46,6 +42,16 @@
               	  <div class="col-4">
 	                <label for="pr-editor-form-difficulty">Difficulty:</label>
 	                <input id="pr-editor-form-difficulty" type="text"/>
+	              </div>
+                  <div class="col-4">
+	                <label for="pr-editor-form-rating">Rating:</label>
+	                <input id="pr-editor-form-rating" type="number" min="0" max="5" value="1"/>
+	              </div>
+	            </div>
+              	<div class="row">
+              	  <div class="col-12">
+	                <label for="pr-editor-form-keyword">Keyword:</label>
+	                <input id="pr-editor-form-keyword" type="text"/>
 	              </div>
 	            </div>
               	<div class="row">
@@ -57,8 +63,12 @@
               </form>
             </div>
           </div>
-          <div class="row pr-toolbar justify-content-lg-end justify-content-center">
+          <div class="row pr-toolbar justify-content-between">
             <div class="col-auto">
+              <a href="#" id="pr-toolbar-yaml" class="pr-toolbar-switch" style="float: left;">YAML</a>
+              <a href="#" id="pr-toolbar-form" class="pr-toolbar-switch pr-toolbar-selected" style="float: left;">form</a>
+           	</div>
+           	<div class="col-auto">
 		      <select id="pr-toolbar-template" style="float: left;">
 		        {% for template in templates %}
 			    <option value="{{ template }}" selected>{{ template }}</option>
