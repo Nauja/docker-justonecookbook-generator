@@ -33,90 +33,6 @@ $(document).ready(function() {
 		};
 	}
 
-	function SourceEditor() {
-  		let editor = $("#pr-editor-source");
-
-		let ace_editor = ace.edit("pr-editor-source");
-		ace_editor.setTheme("ace/theme/monokai");
-		ace_editor.setOptions({
-			fontSize: "14px"
-		});
-		ace_editor.session.setMode("ace/mode/yaml");
-		ace_editor.focus();
-
-		return {
-			"this": editor,
-			"hide": function() {
-				editor.addClass("pr-hidden");
-			},
-			"show": function() {
-				editor.removeClass("pr-hidden");
-			},
-			"val": function(value) {
-				console.log(value);
-				if (!value) {
-					return ace_editor.getValue();
-				} else {
-					ace_editor.setValue(value, -1);
-				}
-			}
-		};
-	}
-
-	function FormEditor() {
-  		let form = $("#pr-editor-form");
-  		let title = form.find("#pr-editor-form-title").first();
-  		let cuisine = form.find("#pr-editor-form-cuisine").first();
-  		let difficulty = form.find("#pr-editor-form-difficulty").first();
-  		let rating = form.find("#pr-editor-form-rating").first();
-  		let keyword = form.find("#pr-editor-form-keyword").first();
-  		let summary = form.find("#pr-editor-form-summary").first();
-
-		return {
-			"this": form,
-			"hide": function() {
-				form.addClass("pr-hidden");
-			},
-			"show": function() {
-				form.removeClass("pr-hidden");
-			},
-			"from_source": function(source) {
-				let obj = jsyaml.safeLoad(source);
-				let stars = 0;
-				obj["rating"].forEach(item => {
-					if("fill" in item)
-						stars += 1;
-				});
-				title.val(obj["title"]);
-				cuisine.val(obj["cuisine"]);
-				difficulty.val(obj["difficulty"]);
-				rating.val(stars);
-				keyword.val(obj["keyword"]);
-				summary.val(obj["summary"]);
-			},
-			"to_source": function() {
-				let stars = [];
-				let stars_count = rating.val();
-				for (let i = 1; i <= 5; ++i) {
-					if (stars_count >= i)
-						stars.push({"fill": 1});
-					else
-						stars.push({"empty": 1});
-				}
-				let obj = {
-					
-					"title": title.val(),
-					"cuisine": cuisine.val(),
-					"difficulty": difficulty.val(),
-					"rating": stars,
-					"keyword": keyword.val(),
-					"summary": summary.val()
-				}
-				return jsyaml.safeDump(obj);
-			}
-		};
-	}
-
 	let editor_mode = Switch(
 		$("#pr-toolbar-yaml"),
 		$("#pr-toolbar-form")
@@ -188,12 +104,12 @@ $(document).ready(function() {
 		let source = form_editor.to_source();
 
 		generate_recipe(
-			source,
+			source_editor.val(),
 			$("#pr-toolbar-template").val(),
 			function(generated) {
 	        	isRunning = false;
 	        	spinner.stop();
-				$("#pr-preview").attr('src', generated);
+				$("#pr-preview").attr('src', generated + "#view=FitV");
           		$("#pr-block").removeClass("pr-hidden");
 			},
 			function(error) {

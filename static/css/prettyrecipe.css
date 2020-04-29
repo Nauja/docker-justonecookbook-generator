@@ -49,6 +49,32 @@ body {
   width: 100%;
 }
 
+#pr-editor-form .pr-fill {
+  width: 100%;
+}
+
+.pr-editor-form-instruction {
+}
+
+#pr-editor-form .pr-editor-form-instruction-add, #pr-editor-form .pr-editor-form-instruction-remove {
+	width: 4em;
+}
+
+.pr-editor-form-instruction-wrapper {
+	margin-bottom: 0.5em;
+}
+
+.pr-editor-form-group {
+}
+
+.pr-editor-form-group-content {
+	padding-left: 1em;
+	padding-right: 1em;
+	padding-top: 0.25em;
+	padding-bottom: 0.5em;
+	background-color: #2b2626;
+}
+
 .pr-hidden {
   display: none;
 }
@@ -99,7 +125,6 @@ h1 {
 /* phone height */
 @media (min-height: 0px) and (max-height: 540px) {
   #pr-editor, #pr-preview {
-    height: 20em;
   }
 
   h1 {
@@ -110,7 +135,6 @@ h1 {
 /* pc but small height */
 @media (min-height: 540px) and (max-height: 620px) {
   #pr-editor, #pr-preview {
-    height: 25em;
   }
 
   h1 {
@@ -120,7 +144,6 @@ h1 {
 
 @media (min-height: 620px) {
   #pr-editor, #pr-preview {
-    height: 30em;
   }
 
   h1 {

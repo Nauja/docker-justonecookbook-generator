@@ -13,9 +13,11 @@
     <script type="text/javascript" src="{{ cdn_url }}/ace/mode-yaml.js" charset="utf-8"></script>
     <script type="text/javascript" src="{{ cdn_url }}/ace/theme-monokai.js" charset="utf-8"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.13.1/js-yaml.min.js"></script>
-	<script type="text/javascript" src="{{ cdn_url }}/js/prettyrecipe.js"></script>
+	<script type="text/javascript" src="{{ cdn_url }}/js/sourceeditor.js"></script>
+  	<script type="text/javascript" src="{{ cdn_url }}/js/formeditor.js"></script>
+  	<script type="text/javascript" src="{{ cdn_url }}/js/prettyrecipe.js"></script>
   </head>
-  <body class="row align-items-center">
+  <body class="row">
     <div class="col-12">
       <div class="row justify-content-center">
         <div class="col-auto">
@@ -58,6 +60,10 @@
               	  <div class="col-12">
 	                <label for="pr-editor-form-summary">Summary:</label>
 	                <textarea id="pr-editor-form-summary"></textarea>
+	              </div>
+	            </div>
+	            <div class="row">
+              	  <div class="col-12" id="pr-editor-form-instructions">
 	              </div>
 	            </div>
               </form>
