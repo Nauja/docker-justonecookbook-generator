@@ -1,5 +1,5 @@
-var SourceEditor = function() {
-	let editor = $("#pr-editor-source");
+var SourceEditor = function(root) {
+	let editor = root;
 
 	let ace_editor = ace.edit("pr-editor-source");
 	ace_editor.setTheme("ace/theme/monokai");

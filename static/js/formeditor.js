@@ -1,30 +1,15 @@
-var FormEditor = function() {
-	this.root = $("#pr-editor-form");
+var FormEditor = function(root) {
+	this.root = root;
 
-	var DynamicList = function(root, item_class, button_label) {
-		this._root = root;
-		this._item_class = item_class;
+	var DynamicList = function(last_child, options) {
+		this._last_child = last_child;
 		this._items = [];
-
-		this._add_button = $('<div/>', {'class': 'row'}).append(
-			$('<div/>', {'class': 'col'}),
-			$('<div/>', {'class': 'col-auto'}).append(
-				$('<input/>', {'class': 'pr-editor-form-button', 'type': 'button', 'value': button_label})
-			)
-		);
-
-		this._add_button.click(() => this.add());
-
-		this._root.append(this._add_button);
-
-		this.add();
+		this._allow_delete_single = options.allow_delete_single
 	};
 	
 	DynamicList.prototype = {
 		_on_action: function(item) {
-			if (item.is_single) {
-				this.add();
-			} else {
+			if (this._allow_delete_single || !item.is_single ) {
 				item.root.remove();
 				let index = this._items.indexOf(item);
 				this._items.splice(index, 1);
@@ -33,26 +18,34 @@ var FormEditor = function() {
 				}
 			}
 		},
-		add: function() {
+		add: function(item) {
 			let size = this._items.length;
 			if (size > 0) {
 				this._items[size - 1].set_single(false);
 			}
-			let item = new this._item_class();
 			item.set_single(size == 0);
 			item.action(() => {
 				this._on_action(item);
 			});
-			this._add_button.before(item.root);
+			this._last_child.before(item.root);
 			this._items.push(item);
+		},
+		length: function() {
+			return this._items.length;
+		},
+		at: function(index) {
+			return this._items[index];
 		}
 	};
 
 	/**
 	 * One instruction line with a delete button.
 	 */
-	var Instruction = function() {
+	var InstructionItem = function(options) {
 		this.root = $('<div/>', {'class': 'row'}).append(
+			$('<div/>', {'class': 'col-auto'}).append(
+				$('<label/>')
+			),
 			$('<div/>', {'class': 'col'}).append(
 				$('<input/>', {'class': 'pr-editor-form-instruction', 'type': 'text'})
 			),
@@ -62,7 +55,9 @@ var FormEditor = function() {
 		);
 
 		this.is_single = false;
+		this.is_section = options.is_section;
 		this._action = $.Callbacks();
+		this._label = this.root.find("label").first();
 		this._field = this.root.find(".pr-editor-form-instruction").first();
 		this._button = this.root.find(".pr-editor-form-button").first();
 
@@ -73,15 +68,14 @@ var FormEditor = function() {
 		this._update();
 	};
 	
-	Instruction.prototype = {
+	InstructionItem.prototype = {
 		_update: function() {
-			if (this.is_single) {
-				this._button.prop("disabled", true);
-				this._button.addClass("pr-hidden");
-			} else {
-				this._button.prop("disabled", false);
-				this._button.removeClass("pr-hidden");
+			if (this.is_section) {
+				this._label.html("Section:");
 			}
+		},
+		set_label: function(value) {
+			this._label.html(value);
 		},
 		set_single: function(value) {
 			this.is_single = value;
@@ -92,59 +86,64 @@ var FormEditor = function() {
 		}
 	};
 
-	var Group = function() {
-		this.root = $('<div/>', {'class': 'pr-editor-form-group'}).append(
-			$('<div/>', {'class': 'row'}).append(
-				$('<div/>', {'class': 'col'}).append(
-					$('<label/>', {'class': 'pr-editor-form-group-label', 'text': 'Group'})
-				),
-				$('<div/>', {'class': 'col-auto'}).append(
-					$('<input/>', {'class': 'pr-editor-form-button', 'type': 'button', 'value': 'Delete'})
-				),
-			),
-			$('<div/>', {'class': 'pr-editor-form-group-content'}).append(
-				$('<label/>', {'class': 'pr-fill', 'text': 'Title:'}),
-				$('<input/>', {'type': 'text:'}),
-				$('<label/>', {'class': 'pr-fill', 'text': 'Instructions:'})
+	var InstructionList = function(root) {
+		this._root = root;
+
+		this._widgets = {
+			add_instruction: $('<input/>', {'class': 'pr-editor-form-button', 'type': 'button', 'value': 'New Instruction'}),
+			add_section: $('<input/>', {'class': 'pr-editor-form-button', 'type': 'button', 'value': 'New Section'}),
+		};
+
+		this._widgets.buttons_panel = $('<div/>', {'class': 'row'}).append(
+			$('<div/>', {'class': 'col'}),
+			$('<div/>', {'class': 'col-auto'}).append(
+				this._widgets.add_instruction,
+				this._widgets.add_section
 			)
 		);
 
-		this.is_single = false;
-		this._action = $.Callbacks();
-		this._label = this.root.find(".pr-editor-form-group-label").first();
-		this._button = this.root.find(".pr-editor-form-button").first();
-		this._content = this.root.find(".pr-editor-form-group-content").first();
+		this._root.append(this._widgets.buttons_panel);
 
 		this._instructions = new DynamicList(
-			this.root.find(".pr-editor-form-group-content").first(),
-			Instruction,
-			"New Instruction"
+			this._widgets.buttons_panel,
+			{
+				"allow_delete_single": true
+			}
 		);
 
-		this._button.click(() => {
-			this._action.fire();
-		});
+		this._widgets.add_instruction.click(() => this._add_instruction());
+		this._widgets.add_section.click(() => this._add_section());
 
+		this._add_instruction();
 		this._update();
 	};
 	
-	Group.prototype = {
+	InstructionList.prototype = {
 		_update: function() {
-			if (this.is_single) {
-				this._button.prop("disabled", true);
-				this._button.addClass("pr-hidden");
-			} else {
-				this._button.prop("disabled", false);
-				this._button.removeClass("pr-hidden");
+			let size = this._instructions.length();
+			let step = 0;
+			for (let i = 0; i < size; ++i) {
+				let item = this._instructions.at(i);
+				if (item.is_section) {
+					step = 0;
+				} else {
+					step += 1;
+					item.set_label(step + ".");
+				}
 			}
 		},
-		set_single: function(value) {
-			this.is_single = value;
+		_add_instruction: function() {
+			this._instructions.add(new InstructionItem({
+				is_section: false
+			}));
 			this._update();
 		},
-		action: function(cb) {
-			this._action.add(cb);
-		}
+		_add_section: function() {
+			this._instructions.add(new InstructionItem({
+				is_section: true
+			}));
+			this._update();
+		},
 	};
 
 	this._widgets = {
@@ -157,11 +156,7 @@ var FormEditor = function() {
 		"instructions": this.root.find("#pr-editor-form-instructions").first()
 	};
 
-	this._groups = new DynamicList(
-		this._widgets.instructions,
-		Group,
-		"New Group"
-	);
+	this._instructions = new InstructionList(this._widgets.instructions);
 };
 
 FormEditor.prototype = {

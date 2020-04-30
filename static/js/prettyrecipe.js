@@ -38,8 +38,8 @@ $(document).ready(function() {
 		$("#pr-toolbar-form")
 	);
 
-	let source_editor = new SourceEditor();
-	let form_editor = new FormEditor();
+	let source_editor = new SourceEditor($("#pr-editor-source"));
+	let form_editor = new FormEditor($("#pr-editor-form"));
 
 	function fetch_template() {
 		$.get($("#pr-editor-source").attr("data-template-url"), function(data) {
